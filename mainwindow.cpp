@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "dff_utils.h"
 
 #include <QCommonStyle>
 #include <QDesktopWidget>
