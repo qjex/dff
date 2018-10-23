@@ -31,6 +31,7 @@ private slots:
     void select_directory();
     void scan_directory(QString const &dir);
     void show_about_dialog();
+    void delete_items();
 
 private:
     std::unique_ptr<Ui::MainWindow> ui;

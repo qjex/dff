@@ -159,3 +159,7 @@ dff
 dff.cbp
 dff_autogen
 
+.idea/dff.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
