@@ -23,10 +23,11 @@ class main_window : public QMainWindow {
 Q_OBJECT
 
 public:
-    explicit main_window(QWidget *parent = 0);
+    explicit main_window(QWidget *parent = nullptr);
     ~main_window();
 private:
     void show_duplicates(QString const &dir);
+    std::vector<QString> get_candidates(QString const &root);
 private slots:
     void select_directory();
     void scan_directory(QString const &dir);

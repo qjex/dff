@@ -9,13 +9,11 @@
 QByteArray file_checksum(const QString &fileName) {
     QFile f(fileName);
     if (f.open(QFile::ReadOnly)) {
-        QCryptographicHash hash(QCryptographicHash::Md5);
-        while (!f.atEnd()) {
-            hash.addData(f.read(READ_BUFF_SIZE));
-        }
-        return hash.result().toHex();
+        QCryptographicHash hash(QCryptographicHash::Algorithm::Md5);
+        hash.addData(&f);
+        return hash.result();
     }
-    return QByteArray().toHex();
+    return QByteArray();
 }
 
 QByteArray next_hash(const QByteArray &h) {

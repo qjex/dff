@@ -65,24 +65,29 @@ void main_window::show_duplicates(const QString &dir) {
     setWindowTitle(QString("Duplicates in: %1 (%2 duplicates)").arg(dir).arg(total_cnt));
 }
 
+std::vector<QString> main_window::get_candidates(const QString &root) {
+    std::unordered_map<qint64, std::vector<QString>> files_by_size;
+    QDirIterator it(root, QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QString path = it.next();
+        QFileInfo file_info(path);
+        files_by_size[file_info.size()].emplace_back(std::move(path));
+    }
+    std::vector<QString> result;
+    for (auto &entry : files_by_size) {
+        if (entry.second.size() < 2) {
+            continue;
+        }
+        for (auto &p : entry.second) {
+            result.emplace_back(std::move(p));
+        }
+    }
+    return result;
+}
+
 void main_window::scan_directory(QString const &dir) {
-    QDir d(dir);
-    QDir pd = d;
-    pd.cdUp();
-    QString parent = pd.absolutePath();
-    QFileInfoList list = d.entryInfoList();
-    for (QFileInfo file_info : list) {
-        if (file_info.isSymLink()) {
-            continue;
-        }
-        QString path = file_info.absoluteFilePath();
-        if (path == dir || path == parent) {
-            continue;
-        }
-        if (file_info.isDir()) {
-            scan_directory(path);
-            continue;
-        }
+    auto candidates = get_candidates(dir);
+    for (auto &path : candidates) {
         auto h = file_checksum(path);
         while (!duplicates[h].empty() && !is_equal_files(duplicates[h].back(), path)) {
             qDebug() << "!!!!!" << path << h << "\n";
