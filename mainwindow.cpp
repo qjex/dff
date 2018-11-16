@@ -6,6 +6,7 @@
 #include <QDesktopWidget>
 #include <QDir>
 #include <QtWidgets>
+#include <string>
 
 main_window::main_window(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -97,6 +98,12 @@ void main_window::scan_directory(QString const &dir) {
     }
 }
 
+int get_decreased(const QString& prev) {
+    int pos = prev.indexOf(' ');
+    QStringRef ref(&prev, 0, pos);
+    return ref.toInt() - 1;
+}
+
 void main_window::delete_items() {
     QList<QTreeWidgetItem *> sel_items = ui->treeWidget->selectedItems();
     for (auto item : sel_items) {
@@ -106,6 +113,8 @@ void main_window::delete_items() {
         }
         QFile file(path);
         if (file.remove()) {
+            int nxt = get_decreased(item->parent()->text(0));
+            item->parent()->setText(0, QString("%1 duplicates").arg(nxt));
             item->parent()->removeChild(item);
         }
     }
