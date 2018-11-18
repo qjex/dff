@@ -11,7 +11,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 find_package(Qt5Widgets REQUIRED)
 
-add_executable(dff main.cpp mainwindow.h mainwindow.cpp dff_utils.cpp dff_utils.h)
+add_executable(dff main.cpp mainwindow.h mainwindow.cpp file_utils.cpp file_utils.h duplicates_scanner.h duplicates_scanner.cpp duplicates_scanner.h)
 
 qt5_use_modules(dff Widgets)
 include_directories("${PROJECT_SOURCE_DIR}/cmake-build-debug")

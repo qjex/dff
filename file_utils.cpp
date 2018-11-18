@@ -4,7 +4,7 @@
 
 #include <QFile>
 #include <QCryptographicHash>
-#include "dff_utils.h"
+#include "file_utils.h"
 
 QByteArray file_checksum(const QString &fileName) {
     QFile f(fileName);

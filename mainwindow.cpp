@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "dff_utils.h"
+#include "file_utils.h"
+#include "duplicates_scanner.h"
 
 #include <QCommonStyle>
 #include <QDesktopWidget>
@@ -36,13 +37,14 @@ void main_window::select_directory() {
                                                     QString(),
                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     ui->treeWidget->clear();
-    duplicates.clear();
     setWindowTitle(QString("Duplicates in: %1").arg(dir));
-    scan_directory(dir);
-    show_duplicates(dir);
+    duplicates_scanner scanner;
+    auto duplicates = scanner.get_duplicates(dir);
+    show_duplicates(dir, duplicates);
 }
 
-void main_window::show_duplicates(const QString &dir) {
+void main_window::show_duplicates(const QString &dir,
+                                  std::unordered_map<QByteArray, std::vector<QString>> &duplicates) {
     size_t total_cnt = 0;
     for (auto &h : duplicates) {
         if (h.second.size() < 2) {
@@ -66,39 +68,6 @@ void main_window::show_duplicates(const QString &dir) {
         separator_item->setText(1, QString("%1B per file").arg(sz));
     }
     setWindowTitle(QString("Duplicates in: %1 (%2 duplicates)").arg(dir).arg(total_cnt));
-}
-
-std::vector<QString> main_window::get_candidates(const QString &root) {
-    std::unordered_map<qint64, std::vector<QString>> files_by_size;
-    QDirIterator it(root, QDir::Hidden | QDir::Files | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        QString path = it.next();
-        QFileInfo file_info(path);
-        files_by_size[file_info.size()].emplace_back(std::move(path));
-    }
-    std::vector<QString> result;
-    for (auto &entry : files_by_size) {
-        if (entry.second.size() < 2) {
-            continue;
-        }
-        for (auto &p : entry.second) {
-            result.emplace_back(std::move(p));
-        }
-    }
-    return result;
-}
-
-void main_window::scan_directory(QString const &dir) {
-    auto candidates = get_candidates(dir);
-    qDebug() << "Done cand\n";
-    for (auto &path : candidates) {
-        auto h = file_checksum(path);
-//        while (!duplicates[h].empty() && !is_equal_files(duplicates[h].back(), path)) {
-//            qDebug() << "NON EQUAL FILES, EQUAL HASHES " << path << ' ' << h << "\n";
-//            h = next_hash(h);
-//        }
-        duplicates[h].emplace_back(path);
-    }
 }
 
 int get_decreased(const QString &prev) {
