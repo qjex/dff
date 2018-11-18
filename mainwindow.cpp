@@ -70,24 +70,16 @@ void main_window::show_duplicates(const QString &dir,
     setWindowTitle(QString("Duplicates in: %1 (%2 duplicates)").arg(dir).arg(total_cnt));
 }
 
-int get_decreased(const QString &prev) {
-    int pos = prev.indexOf(' ');
-    QStringRef ref(&prev, 0, pos);
-    return ref.toInt() - 1;
-}
-
 void main_window::delete_items() {
     QList<QTreeWidgetItem *> sel_items = ui->treeWidget->selectedItems();
     for (auto item : sel_items) {
-        QString path = item->text(1);
+        QString path = item->text(0);
         if (path.isEmpty()) {
             continue;
         }
         QFile file(path);
         if (file.remove()) {
-            int nxt = get_decreased(item->parent()->text(0));
-            item->parent()->setText(0, QString("%1 duplicates").arg(nxt));
-            item->parent()->removeChild(item);
+            item->setDisabled(true);
         }
     }
 
