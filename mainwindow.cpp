@@ -13,10 +13,9 @@ main_window::main_window(QWidget *parent)
     ui->setupUi(this);
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry()));
 
-    ui->treeWidget->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    ui->treeWidget->header()->setSectionResizeMode(1, QHeaderView::Interactive);
-    ui->treeWidget->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    ui->treeWidget->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->treeWidget->setUniformRowHeights(true);
 
     QCommonStyle style;
     ui->actionScan_Directory->setIcon(style.standardIcon(QCommonStyle::SP_DialogOpenButton));
@@ -53,22 +52,25 @@ void main_window::show_duplicates(const QString &dir) {
         QTreeWidgetItem *separator_item = new QTreeWidgetItem(ui->treeWidget);
         separator_item->setExpanded(true);
         separator_item->setText(0, QString("%1 duplicates").arg(h.second.size()));
+        qint64 sz = -1;
         for (auto &file_path : h.second) {
             QTreeWidgetItem *item = new QTreeWidgetItem(separator_item);
             QFileInfo file_info(file_path);
-            item->setText(0, file_info.fileName());
-            item->setText(1, file_path);
-            item->setToolTip(1, file_path);
-            item->setText(2, QString::number(file_info.size()));
+            if (sz == -1) {
+                sz = file_info.size();
+            }
+            item->setText(0, file_path);
+            item->setToolTip(0, file_path);
             ui->treeWidget->addTopLevelItem(item);
         }
+        separator_item->setText(1, QString("%1B per file").arg(sz));
     }
     setWindowTitle(QString("Duplicates in: %1 (%2 duplicates)").arg(dir).arg(total_cnt));
 }
 
 std::vector<QString> main_window::get_candidates(const QString &root) {
     std::unordered_map<qint64, std::vector<QString>> files_by_size;
-    QDirIterator it(root, QDir::Files, QDirIterator::Subdirectories);
+    QDirIterator it(root, QDir::Hidden | QDir::Files | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QString path = it.next();
         QFileInfo file_info(path);
@@ -88,17 +90,18 @@ std::vector<QString> main_window::get_candidates(const QString &root) {
 
 void main_window::scan_directory(QString const &dir) {
     auto candidates = get_candidates(dir);
+    qDebug() << "Done cand\n";
     for (auto &path : candidates) {
         auto h = file_checksum(path);
-        while (!duplicates[h].empty() && !is_equal_files(duplicates[h].back(), path)) {
-            qDebug() << "!!!!!" << path << h << "\n";
-            h = next_hash(h);
-        }
+//        while (!duplicates[h].empty() && !is_equal_files(duplicates[h].back(), path)) {
+//            qDebug() << "NON EQUAL FILES, EQUAL HASHES " << path << ' ' << h << "\n";
+//            h = next_hash(h);
+//        }
         duplicates[h].emplace_back(path);
     }
 }
 
-int get_decreased(const QString& prev) {
+int get_decreased(const QString &prev) {
     int pos = prev.indexOf(' ');
     QStringRef ref(&prev, 0, pos);
     return ref.toInt() - 1;

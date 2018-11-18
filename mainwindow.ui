@@ -30,7 +30,7 @@
     <item>
      <widget class="QTreeWidget" name="treeWidget">
       <property name="columnCount">
-       <number>3</number>
+          <number>2</number>
       </property>
       <attribute name="headerMinimumSectionSize">
        <number>100</number>
@@ -38,11 +38,6 @@
       <attribute name="headerStretchLastSection">
        <bool>false</bool>
       </attribute>
-      <column>
-       <property name="text">
-        <string>Filename</string>
-       </property>
-      </column>
       <column>
        <property name="text">
         <string>Path</string>

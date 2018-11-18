@@ -9,7 +9,7 @@
 QByteArray file_checksum(const QString &fileName) {
     QFile f(fileName);
     if (f.open(QFile::ReadOnly)) {
-        QCryptographicHash hash(QCryptographicHash::Algorithm::Md5);
+        QCryptographicHash hash(QCryptographicHash::Md5);
         hash.addData(&f);
         return hash.result();
     }
