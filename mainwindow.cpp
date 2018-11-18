@@ -65,7 +65,7 @@ void main_window::show_duplicates(const QString &dir,
             item->setToolTip(0, file_path);
             ui->treeWidget->addTopLevelItem(item);
         }
-        separator_item->setText(1, QString("%1B per file").arg(sz));
+        separator_item->setText(1, human_size(static_cast<qint64>(h.second.size()) * sz));
     }
     setWindowTitle(QString("Duplicates in: %1 (%2 duplicates)").arg(dir).arg(total_cnt));
 }
@@ -95,4 +95,9 @@ void main_window::delete_items() {
 
 void main_window::show_about_dialog() {
     QMessageBox::aboutQt(this);
+}
+
+QString main_window::human_size(qint64 size) {
+    QLocale locale = this->locale();
+    return locale.formattedDataSize(size);
 }

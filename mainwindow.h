@@ -19,6 +19,7 @@ public:
 private:
     void show_duplicates(const QString &dir,
                          std::unordered_map<QByteArray, std::vector<QString>> &duplicates);
+    QString human_size(qint64 size);
 private slots:
     void select_directory();
     void show_about_dialog();
