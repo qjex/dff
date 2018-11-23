@@ -13,10 +13,6 @@ std::unordered_map<QByteArray, std::vector<QString>> duplicates_scanner::get_dup
     std::unordered_map<QByteArray, std::vector<QString>> duplicates;
     for (auto &path : candidates) {
         auto h = file_checksum(path);
-//        while (!duplicates[h].empty() && !is_equal_files(duplicates[h].back(), path)) {
-//            qDebug() << "NON EQUAL FILES, EQUAL HASHES " << path << ' ' << h << "\n";
-//            h = next_hash(h);
-//        }
         duplicates[h].emplace_back(path);
     }
     return duplicates;
@@ -40,4 +36,13 @@ std::vector<QString> duplicates_scanner::get_candidates(const QString &root) {
         }
     }
     return result;
+}
+
+void duplicates_scanner::run() {
+    emit send_status("Scanning...");
+    emit send_duplicates(get_duplicates(root));
+}
+
+duplicates_scanner::duplicates_scanner(QString const &root) {
+    this->root = root;
 }

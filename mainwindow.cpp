@@ -1,16 +1,16 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "file_utils.h"
 #include "duplicates_scanner.h"
 
 #include <QCommonStyle>
 #include <QDesktopWidget>
 #include <QDir>
 #include <QtWidgets>
-#include <string>
 
 main_window::main_window(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
+    qRegisterMetaType<std::unordered_map<QByteArray, std::vector<QString>>>(
+        "std::unordered_map<QByteArray,std::vector<QString>>");
     ui->setupUi(this);
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry()));
 
@@ -38,13 +38,21 @@ void main_window::select_directory() {
                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     ui->treeWidget->clear();
     setWindowTitle(QString("Duplicates in: %1").arg(dir));
-    duplicates_scanner scanner;
-    auto duplicates = scanner.get_duplicates(dir);
-    show_duplicates(dir, duplicates);
+    auto scanner = new duplicates_scanner(dir);
+    QObject::connect(scanner,
+                     SIGNAL(send_duplicates(std::unordered_map<QByteArray, std::vector<QString>> const &)),
+                     this,
+                     SLOT(show_duplicates(std::unordered_map<QByteArray, std::vector<QString>> const &)));
+    QObject::connect(scanner,
+                     SIGNAL(send_status(QString const &)),
+                     this,
+                     SLOT(show_status(QString const &)));
+    ui->actionScan_Directory->setDisabled(true);
+    scanner->start();
 }
 
-void main_window::show_duplicates(const QString &dir,
-                                  std::unordered_map<QByteArray, std::vector<QString>> &duplicates) {
+void main_window::show_duplicates(std::unordered_map<QByteArray, std::vector<QString>> const &duplicates) {
+    ui->treeWidget->clear();
     size_t total_cnt = 0;
     for (auto &h : duplicates) {
         if (h.second.size() < 2) {
@@ -67,7 +75,8 @@ void main_window::show_duplicates(const QString &dir,
         }
         separator_item->setText(1, human_size(static_cast<qint64>(h.second.size()) * sz));
     }
-    setWindowTitle(QString("Duplicates in: %1 (%2 duplicates)").arg(dir).arg(total_cnt));
+    setWindowTitle(QString("Found %2 duplicates").arg(total_cnt));
+    ui->actionScan_Directory->setDisabled(false);
 }
 
 void main_window::delete_items() {
@@ -82,7 +91,6 @@ void main_window::delete_items() {
             item->setDisabled(true);
         }
     }
-
 }
 
 void main_window::show_about_dialog() {
@@ -92,4 +100,9 @@ void main_window::show_about_dialog() {
 QString main_window::human_size(qint64 size) {
     QLocale locale = this->locale();
     return locale.formattedDataSize(size);
+}
+void main_window::show_status(QString const &txt) {
+    ui->treeWidget->clear();
+    QTreeWidgetItem *status_item = new QTreeWidgetItem(ui->treeWidget);
+    status_item->setText(0, txt);
 }

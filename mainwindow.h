@@ -17,14 +17,13 @@ public:
     explicit main_window(QWidget *parent = nullptr);
     ~main_window();
 private:
-    void show_duplicates(const QString &dir,
-                         std::unordered_map<QByteArray, std::vector<QString>> &duplicates);
     QString human_size(qint64 size);
 private slots:
     void select_directory();
     void show_about_dialog();
     void delete_items();
-
+    void show_duplicates(std::unordered_map<QByteArray, std::vector<QString>> const &duplicates);
+    void show_status(QString const &);
 private:
     std::unique_ptr<Ui::MainWindow> ui;
 };

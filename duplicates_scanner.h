@@ -6,6 +6,7 @@
 #define DFF_DUPLICATES_SCANNER_H
 
 #include <QString>
+#include <QThread>
 #include <unordered_map>
 #include <vector>
 
@@ -18,10 +19,20 @@ struct hash<QByteArray> {
 };
 }
 
-struct duplicates_scanner {
-    std::unordered_map<QByteArray, std::vector<QString>> get_duplicates(QString const &dir);
+struct duplicates_scanner : public QThread {
+Q_OBJECT
+public:
+    duplicates_scanner(QString const &root);
+protected:
+    virtual void run();
+signals:
+    void send_duplicates(std::unordered_map<QByteArray, std::vector<QString>> const &);
+    void send_status(QString const &);
 private:
+    std::unordered_map<QByteArray, std::vector<QString>> get_duplicates(QString const &dir);
     std::vector<QString> get_candidates(const QString &root);
+private:
+    QString root;
 };
 
 #endif //DFF_DUPLICATES_SCANNER_H
