@@ -37,6 +37,9 @@ void main_window::select_directory() {
                                                     "Select Directory for Scanning",
                                                     QString(),
                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (dir.size() == 0) {
+        return;
+    }
     ui->treeWidget->clear();
     setWindowTitle(QString("Duplicates in: %1").arg(dir));
     scanner = new duplicates_scanner(dir);
@@ -112,6 +115,8 @@ void main_window::show_status(QString const &txt) {
 }
 
 void main_window::exit() {
-    scanner->wait();
+    if (scanner != nullptr) {
+        scanner->wait();
+    }
     this->close();
 }
