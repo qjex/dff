@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QDirIterator>
 #include <QDir>
+#include <QtDebug>
 #include "duplicates_scanner.h"
 #include "file_utils.h"
 
@@ -45,4 +46,8 @@ void duplicates_scanner::run() {
 
 duplicates_scanner::duplicates_scanner(QString const &root) {
     this->root = root;
+}
+
+duplicates_scanner::~duplicates_scanner() {
+    qDebug() << QString("Worker for %1 deleted").arg(root);
 }

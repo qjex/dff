@@ -6,6 +6,7 @@
 #include <QDesktopWidget>
 #include <QDir>
 #include <QtWidgets>
+#include <QLocale>
 
 main_window::main_window(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -24,7 +25,7 @@ main_window::main_window(QWidget *parent)
     ui->actionAbout->setIcon(style.standardIcon(QCommonStyle::SP_DialogHelpButton));
 
     connect(ui->actionScan_Directory, &QAction::triggered, this, &main_window::select_directory);
-    connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
+    connect(ui->actionExit, &QAction::triggered, this, &main_window::exit);
     connect(ui->actionAbout, &QAction::triggered, this, &main_window::show_about_dialog);
     connect(ui->pushButton, SIGNAL(released()), SLOT(delete_items()));
 }
@@ -38,7 +39,7 @@ void main_window::select_directory() {
                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     ui->treeWidget->clear();
     setWindowTitle(QString("Duplicates in: %1").arg(dir));
-    auto scanner = new duplicates_scanner(dir);
+    scanner = new duplicates_scanner(dir);
     QObject::connect(scanner,
                      SIGNAL(send_duplicates(std::unordered_map<QByteArray, std::vector<QString>> const &)),
                      this,
@@ -47,6 +48,7 @@ void main_window::select_directory() {
                      SIGNAL(send_status(QString const &)),
                      this,
                      SLOT(show_status(QString const &)));
+    connect(scanner, SIGNAL (finished()), scanner, SLOT (deleteLater()));
     ui->actionScan_Directory->setDisabled(true);
     scanner->start();
 }
@@ -75,7 +77,7 @@ void main_window::show_duplicates(std::unordered_map<QByteArray, std::vector<QSt
         }
         separator_item->setText(1, human_size(static_cast<qint64>(h.second.size()) * sz));
     }
-    setWindowTitle(QString("Found %2 duplicates").arg(total_cnt));
+    setWindowTitle(QString("Found %1 duplicates").arg(total_cnt));
     ui->actionScan_Directory->setDisabled(false);
 }
 
@@ -98,11 +100,18 @@ void main_window::show_about_dialog() {
 }
 
 QString main_window::human_size(qint64 size) {
-    QLocale locale = this->locale();
-    return locale.formattedDataSize(size);
+    return QString("%1 B").arg(size);
+//    QLocale locale = this->locale();
+//    return locale.formattedDataSize(size);
 }
+
 void main_window::show_status(QString const &txt) {
     ui->treeWidget->clear();
     QTreeWidgetItem *status_item = new QTreeWidgetItem(ui->treeWidget);
     status_item->setText(0, txt);
+}
+
+void main_window::exit() {
+    scanner->wait();
+    this->close();
 }

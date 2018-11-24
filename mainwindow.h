@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_set>
 #include <unordered_map>
+#include "duplicates_scanner.h"
 
 namespace Ui {
 class MainWindow;
@@ -24,8 +25,10 @@ private slots:
     void delete_items();
     void show_duplicates(std::unordered_map<QByteArray, std::vector<QString>> const &duplicates);
     void show_status(QString const &);
+    void exit();
 private:
     std::unique_ptr<Ui::MainWindow> ui;
+    duplicates_scanner *scanner = nullptr;
 };
 
 #endif // MAINWINDOW_H

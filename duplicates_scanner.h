@@ -22,7 +22,8 @@ struct hash<QByteArray> {
 struct duplicates_scanner : public QThread {
 Q_OBJECT
 public:
-    duplicates_scanner(QString const &root);
+    explicit duplicates_scanner(QString const &root);
+    ~duplicates_scanner();
 protected:
     virtual void run();
 signals:
