@@ -19,13 +19,13 @@ public:
     ~main_window();
 private:
     QString human_size(qint64 size);
+    void closeEvent(QCloseEvent *event);
 private slots:
     void select_directory();
     void show_about_dialog();
     void delete_items();
     void show_duplicates(std::unordered_map<QByteArray, std::vector<QString>> const &duplicates);
     void show_status(QString const &);
-    void exit();
 private:
     std::unique_ptr<Ui::MainWindow> ui;
     duplicates_scanner *scanner = nullptr;

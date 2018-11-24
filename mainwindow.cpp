@@ -25,8 +25,9 @@ main_window::main_window(QWidget *parent)
     ui->actionAbout->setIcon(style.standardIcon(QCommonStyle::SP_DialogHelpButton));
 
     connect(ui->actionScan_Directory, &QAction::triggered, this, &main_window::select_directory);
-    connect(ui->actionExit, &QAction::triggered, this, &main_window::exit);
+    connect(ui->actionExit, &QAction::triggered, this, &main_window::close);
     connect(ui->actionAbout, &QAction::triggered, this, &main_window::show_about_dialog);
+    connect(ui->pushButton, SIGNAL(released()), SLOT(delete_items()));
     connect(ui->pushButton, SIGNAL(released()), SLOT(delete_items()));
 }
 
@@ -114,9 +115,8 @@ void main_window::show_status(QString const &txt) {
     status_item->setText(0, txt);
 }
 
-void main_window::exit() {
+void main_window::closeEvent(QCloseEvent *event) {
     if (scanner != nullptr) {
         scanner->wait();
     }
-    this->close();
 }
